@@ -2,13 +2,13 @@ openapi: 3.0.0
 info:
   title: SmileFile
   version: 1.0.0
-
+servers:
+  - url: /
 paths:
   /patients:
     get:
-      summary: Получить список всех пациентов
       responses:
-        '200':
+        "200":
           description: Список пациентов
           content:
             application/json:
@@ -16,7 +16,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Patient'
-
     post:
       summary: Добавить нового пациента
       requestBody:
@@ -24,15 +23,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Patient'
+              $ref: '#/components/schemas/NewPatient'
       responses:
-        '201':
+        "201":
           description: Пациент создан
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Patient'
-
   /patients/{patientId}:
     get:
       summary: Получить конкретного пациента
@@ -43,13 +41,12 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Информация о пациенте
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Patient'
-
     put:
       summary: Обновить информацию о пациенте
       parameters:
@@ -65,13 +62,50 @@ paths:
             schema:
               $ref: '#/components/schemas/Patient'
       responses:
-        '200':
+        "200":
           description: Информация о пациенте обновлена
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Patient'
-
+  /visits:
+    post:
+      summary: Создать новое посещение
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewVisit'
+      responses:
+        "201":
+          description: Посещение создано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Visit'
+  /visits/{visitId}:
+    put:
+      summary: Обновить информацию о посещении
+      parameters:
+        - name: visitId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Visit'
+      responses:
+        "200":
+          description: Информация о посещении обновлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Visit'
 components:
   schemas:
     Patient:
@@ -79,27 +113,108 @@ components:
       properties:
         id:
           type: string
+          title: id
         name:
           type: string
+          title: name
         contactDetails:
           type: string
           description: Контактные данные
+          title: contactDetails
         lastAppointment:
           type: string
           format: date-time
           description: Дата последнего посещения
+          title: lastAppointment
         visits:
           type: array
           items:
-            type: object
-            properties:
-              date:
-                type: string
-                format: date-time
-                description: Дата посещения
-              diagnosis:
-                type: string
-                description: Диагноз
-              treatment:
-                type: string
-                description: Лечение
+            $ref: '#/components/schemas/Visit'
+          title: visits
+      example:
+        id: id
+        name: name
+        contactDetails: contactDetails
+        lastAppointment: "2000-01-23T04:56:07.000+00:00"
+        visits:
+          - id: visitId1
+            patientId: patientId1
+            date: "2000-01-23T04:56:07.000+00:00"
+            treatment: treatment
+            diagnosis: diagnosis
+          - id: visitId2
+            patientId: patientId1
+            date: "2000-01-23T04:56:07.000+00:00"
+            treatment: treatment
+            diagnosis: diagnosis
+    Visit:
+      type: object
+      properties:
+        id:
+          type: string
+          title: id
+        patientId:
+          type: string
+          title: patientId
+        date:
+          type: string
+          format: date-time
+          description: Дата посещения
+          title: date
+        diagnosis:
+          type: string
+          description: Диагноз
+          title: diagnosis
+        treatment:
+          type: string
+          description: Лечение
+          title: treatment
+      example:
+        id: visitId1
+        patientId: patientId1
+        date: "2000-01-23T04:56:07.000+00:00"
+        treatment: treatment
+        diagnosis: diagnosis
+    NewPatient:
+      type: object
+      properties:
+        name:
+          type: string
+          title: name
+        contactDetails:
+          type: string
+          description: Контактные данные
+          title: contactDetails
+        lastAppointment:
+          type: string
+          format: date-time
+          description: Дата последнего посещения
+          title: lastAppointment
+      example:
+        name: name
+        contactDetails: contactDetails
+        lastAppointment: "2000-01-23T04:56:07.000+00:00"
+    NewVisit:
+      type: object
+      properties:
+        patientId:
+          type: string
+          title: patientId
+        date:
+          type: string
+          format: date-time
+          description: Дата посещения
+          title: date
+        diagnosis:
+          type: string
+          description: Диагноз
+          title: diagnosis
+        treatment:
+          type: string
+          description: Лечение
+          title: treatment
+      example:
+        patientId: patientId1
+        date: "2000-01-23T04:56:07.000+00:00"
+        treatment: treatment
+        diagnosis: diagnosis

@@ -1,0 +1,105 @@
+openapi: 3.0.0
+info:
+  title: SmileFile
+  version: 1.0.0
+
+paths:
+  /patients:
+    get:
+      summary: Получить список всех пациентов
+      responses:
+        '200':
+          description: Список пациентов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Patient'
+
+    post:
+      summary: Добавить нового пациента
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Patient'
+      responses:
+        '201':
+          description: Пациент создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+
+  /patients/{patientId}:
+    get:
+      summary: Получить конкретного пациента
+      parameters:
+        - name: patientId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Информация о пациенте
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+
+    put:
+      summary: Обновить информацию о пациенте
+      parameters:
+        - name: patientId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Patient'
+      responses:
+        '200':
+          description: Информация о пациенте обновлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+
+components:
+  schemas:
+    Patient:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        contactDetails:
+          type: string
+          description: Контактные данные
+        lastAppointment:
+          type: string
+          format: date-time
+          description: Дата последнего посещения
+        visits:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date-time
+                description: Дата посещения
+              diagnosis:
+                type: string
+                description: Диагноз
+              treatment:
+                type: string
+                description: Лечение

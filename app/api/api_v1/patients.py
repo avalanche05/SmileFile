@@ -15,13 +15,16 @@ from fastapi import (  # noqa: F401
     Security,
     status,
 )
+from fastapi.responses import JSONResponse
 
-from app.main import router
 from app.models.patient import Patient, NewPatient
-import app.services.database as db_services
+import app.database.models as db_models
+from app.models.visit import Visit
+
+patients_router = APIRouter()
 
 
-@router.get(
+@patients_router.get(
     "/patients",
     responses={
         200: {"model": List[Patient], "description": "Список пациентов"},
@@ -32,10 +35,29 @@ import app.services.database as db_services
 )
 async def patients_get(
 ) -> List[Patient]:
-    ...
+    patients = []
+    for db_patient in db_models.Patient.select():
+        patient = Patient()
+        patient.id = db_patient.id
+        patient.name = db_patient.name
+        patient.contact_details = db_patient.contactDetails
+        patient.last_appointment = db_patient.lastAppointment
+        patient.visits = []
+        for db_visit in db_patient.visits:
+            visit = Visit()
+            visit.id = db_visit.id
+            visit.patient_id = db_visit.patient.id
+            visit.date = db_visit.date
+            visit.diagnosis = db_visit.diagnosis
+            visit.treatment = db_visit.treatment
+
+            patient.visits.append(visit)
+
+        patients.append(patient)
+    return patients
 
 
-@router.get(
+@patients_router.get(
     "/patients/{patientId}",
     responses={
         200: {"model": Patient, "description": "Информация о пациенте"},
@@ -45,12 +67,35 @@ async def patients_get(
     response_model_by_alias=True,
 )
 async def patients_patient_id_get(
-        patientId: str = Path(None, description=""),
+        patientId: str,
 ) -> Patient:
-    ...
+    try:
+        db_patient = db_models.Patient.get(db_models.Patient.id == patientId)
+
+        patient = Patient()
+        patient.id = db_patient.id
+        patient.name = db_patient.name
+        patient.contact_details = db_patient.contactDetails
+        patient.last_appointment = db_patient.lastAppointment
+        patient.visits = []
+
+        for db_visit in db_patient.visits:
+            visit = Visit()
+            visit.id = db_visit.id
+            visit.patient_id = db_visit.patient.id
+            visit.date = db_visit.date
+            visit.diagnosis = db_visit.diagnosis
+            visit.treatment = db_visit.treatment
+
+            patient.visits.append(visit)
+        return patient
+    except db_models.Patient.DoesNotExist:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"error": f"Patient with id = {patientId} not found."})
 
 
-@router.put(
+@patients_router.put(
     "/patients/{patientId}",
     responses={
         200: {"model": Patient, "description": "Информация о пациенте обновлена"},
@@ -60,13 +105,43 @@ async def patients_patient_id_get(
     response_model_by_alias=True,
 )
 async def patients_patient_id_put(
-        patientId: str = Path(None, description=""),
+        patientId: str,
         patient: Patient = Body(None, description=""),
 ) -> Patient:
-    ...
+    try:
+        db_patient = db_models.Patient.get(db_models.Patient.id == patientId)
+
+        db_patient.name = patient.name
+        db_patient.contactDetails = patient.contact_details
+        db_patient.lastAppointment = patient.last_appointment
+        db_patient.save()
+
+        patient = Patient()
+
+        patient.id = db_patient.id
+        patient.name = db_patient.name
+        patient.contact_details = db_patient.contactDetails
+        patient.last_appointment = db_patient.lastAppointment
+        patient.visits = []
+
+        for db_visit in db_patient.visits:
+            visit = Visit()
+            visit.id = db_visit.id
+            visit.patient_id = db_visit.patient.id
+            visit.date = db_visit.date
+            visit.diagnosis = db_visit.diagnosis
+            visit.treatment = db_visit.treatment
+
+            patient.visits.append(visit)
+
+        return patient
+    except db_models.Patient.DoesNotExist:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"error": f"Patient with id = {patientId} not found."})
 
 
-@router.post(
+@patients_router.post(
     "/patients",
     responses={
         201: {"model": Patient, "description": "Пациент создан"},
@@ -78,5 +153,39 @@ async def patients_patient_id_put(
 async def patients_post(
         new_patient: NewPatient = Body(None, description=""),
 ) -> Patient:
-    print('wfowqfjq')
-    return db_services.create_patient(new_patient)
+    patient = Patient()
+
+    db_patient = db_models.Patient(
+        name=new_patient.name,
+        contactDetails=new_patient.contact_details,
+        lastAppointment=new_patient.last_appointment
+    )
+    db_patient.save()
+
+    patient.id = db_patient.id
+    patient.name = db_patient.name
+    patient.contact_details = db_patient.contactDetails
+    patient.last_appointment = db_patient.lastAppointment
+    patient.visits = []
+
+    if new_patient.visits:
+        for visit in new_patient.visits:
+            db_visit = db_models.Visit(
+                patient=patient.id,
+                date=visit.date,
+                diagnosis=visit.diagnosis,
+                treatment=visit.treatment
+            )
+            db_visit.save()
+
+    for db_visit in db_patient.visits:
+        visit = Visit()
+        visit.id = db_visit.id
+        visit.patient_id = db_visit.patient.id
+        visit.date = db_visit.date
+        visit.diagnosis = db_visit.diagnosis
+        visit.treatment = db_visit.treatment
+
+        patient.visits.append(visit)
+
+    return patient

@@ -7,8 +7,15 @@ from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 
 
 class Visit(BaseModel):
-    id: Optional[str] = Field(alias="id", default=None)
-    patient_id: Optional[str] = Field(alias="patientId", default=None)
+    id: Optional[int] = Field(alias="id", default=None)
+    patient_id: Optional[int] = Field(alias="patientId", default=None)
+    date: Optional[datetime] = Field(alias="date", default=None)
+    diagnosis: Optional[str] = Field(alias="diagnosis", default=None)
+    treatment: Optional[str] = Field(alias="treatment", default=None)
+
+
+class NewVisit(BaseModel):
+    patient_id: Optional[int] = Field(alias="patientId", default=None)
     date: Optional[datetime] = Field(alias="date", default=None)
     diagnosis: Optional[str] = Field(alias="diagnosis", default=None)
     treatment: Optional[str] = Field(alias="treatment", default=None)

@@ -12,7 +12,7 @@ from app.models.visit import Visit
 
 
 class Patient(BaseModel):
-    id: Optional[str] = Field(alias="id", default=None)
+    id: Optional[int] = Field(alias="id", default=None)
     name: Optional[str] = Field(alias="name", default=None)
     contact_details: Optional[str] = Field(alias="contactDetails", default=None)
     last_appointment: Optional[datetime] = Field(alias="lastAppointment", default=None)

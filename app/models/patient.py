@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional  # noqa: F401
 
 from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 
-from app.models.visit import Visit
+from app.models.visit import Visit, NewVisit
 
 
 class Patient(BaseModel):
@@ -23,4 +23,4 @@ class NewPatient(BaseModel):
     name: Optional[str] = Field(alias="name", default=None)
     contact_details: Optional[str] = Field(alias="contactDetails", default=None)
     last_appointment: Optional[datetime] = Field(alias="lastAppointment", default=None)
-    visits: Optional[List[Visit]] = Field(alias="visits", default=None)
+    visits: Optional[List[NewVisit]] = Field(alias="visits", default=None)

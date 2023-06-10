@@ -7,6 +7,22 @@ servers:
 paths:
   /patients:
     get:
+      summary: Получить список пациентов
+      parameters:
+        - name: offset
+          in: query
+          description: Начальная точка отсчета для списка пациентов
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          description: Ограничение на количество возвращаемых пациентов
+          required: false
+          schema:
+            type: integer
+            default: 1000
       responses:
         "200":
           description: Список пациентов
@@ -56,7 +72,9 @@ paths:
         "500":
           description: Внутренняя ошибка сервера
     put:
-      summary: Обновить информацию о пациенте (список visits обновляется отдельно. Здесь можно оставить пустым)
+      summary: Обновить информацию о пациенте
+      description: |
+        Список visits обновляется отдельно. Передавать список visits не нужно.
       parameters:
         - name: patientId
           description: Пользователя находим именно по этому id. Id в body не используется.
@@ -86,6 +104,31 @@ paths:
   /visits:
     get:
       summary: Получить список посещений
+      description: |
+        Посещения автоматически отсортированы по дате в порядке возрастания.
+      parameters:
+        - name: offset
+          in: query
+          description: Начальная точка отсчета для списка посещений
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          description: Ограничение на количество возвращаемых посещений
+          required: false
+          schema:
+            type: integer
+            default: 1000
+        - name: date
+          in: query
+          description: Дата для фильтрации посещений(если пустое, фильтра по дате нет)
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2000-01-23'
       responses:
         "200":
           description: Список посещений
@@ -95,6 +138,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Visit'
+
         "500":
           description: Внутренняя ошибка сервера
     post:
